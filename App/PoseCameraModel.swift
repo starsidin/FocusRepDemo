@@ -91,10 +91,10 @@ final class PoseCameraModel: NSObject, ObservableObject, AVCaptureVideoDataOutpu
         captureSession.sessionPreset = .hd1280x720
         defer { captureSession.commitConfiguration() }
 
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front),
               let input = try? AVCaptureDeviceInput(device: device),
               captureSession.canAddInput(input) else {
-            publishStatus("无法打开后置相机")
+            publishStatus("无法打开前置相机")
             return false
         }
         captureSession.addInput(input)
@@ -107,8 +107,14 @@ final class PoseCameraModel: NSObject, ObservableObject, AVCaptureVideoDataOutpu
             return false
         }
         captureSession.addOutput(output)
-        if let connection = output.connection(with: .video), connection.isVideoOrientationSupported {
-            connection.videoOrientation = .portrait
+        if let connection = output.connection(with: .video) {
+            if connection.isVideoOrientationSupported {
+                connection.videoOrientation = .portrait
+            }
+            if connection.isVideoMirroringSupported {
+                connection.automaticallyAdjustsVideoMirroring = false
+                connection.isVideoMirrored = false
+            }
         }
         output.setSampleBufferDelegate(self, queue: captureQueue)
         configured = true

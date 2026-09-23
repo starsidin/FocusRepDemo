@@ -9,10 +9,13 @@ struct CameraPreview: UIViewRepresentable {
         let view = PreviewView()
         view.previewLayer.session = session
         view.previewLayer.videoGravity = .resizeAspectFill
+        view.configureConnection()
         return view
     }
 
-    func updateUIView(_ uiView: PreviewView, context: Context) {}
+    func updateUIView(_ uiView: PreviewView, context: Context) {
+        uiView.configureConnection()
+    }
 }
 
 final class PreviewView: UIView {
@@ -24,8 +27,17 @@ final class PreviewView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        if let connection = previewLayer.connection, connection.isVideoOrientationSupported {
+        configureConnection()
+    }
+
+    func configureConnection() {
+        guard let connection = previewLayer.connection else { return }
+        if connection.isVideoOrientationSupported {
             connection.videoOrientation = .portrait
+        }
+        if connection.isVideoMirroringSupported {
+            connection.automaticallyAdjustsVideoMirroring = false
+            connection.isVideoMirrored = true
         }
     }
 }
@@ -54,7 +66,7 @@ struct PoseSkeletonView: View {
             func screenPoint(_ joint: BodyJoint) -> CGPoint? {
                 guard let point = pose.points[joint] else { return nil }
                 return CGPoint(
-                    x: xOffset + point.x * width,
+                    x: xOffset + (1 - point.x) * width,
                     y: yOffset + (1 - point.y) * height
                 )
             }

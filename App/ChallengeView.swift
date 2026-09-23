@@ -62,7 +62,7 @@ struct ChallengeView: View {
                             .font(.caption)
                             .monospacedDigit()
                     } else {
-                        Text("将手机竖放在侧面，让肩、手臂、髋和脚踝进入画面")
+                        Text("将手机竖放在身体侧前方，屏幕朝向自己，让全身进入画面")
                             .font(.caption)
                             .multilineTextAlignment(.center)
                     }
