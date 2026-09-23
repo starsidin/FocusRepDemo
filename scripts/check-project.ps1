@@ -7,6 +7,8 @@ $requiredFiles = @(
     'App/FocusSession.swift',
     'App/ContentView.swift',
     'App/ChallengeView.swift',
+    'App/PoseCameraModel.swift',
+    'App/PoseCameraView.swift',
     'Shared/FocusActivityAttributes.swift',
     'Widget/Info.plist',
     'Widget/FocusRepWidget.swift',
@@ -26,6 +28,12 @@ if ($appPlist.plist.dict.key -notcontains 'NSSupportsLiveActivities') {
 }
 if ($appPlist.plist.dict.key -notcontains 'CFBundleURLTypes') {
     throw 'App does not declare the focusrep deep link.'
+}
+if ($appPlist.plist.dict.key -notcontains 'UILaunchScreen') {
+    throw 'App does not declare a modern full-screen launch screen.'
+}
+if ($appPlist.plist.dict.key -notcontains 'NSCameraUsageDescription') {
+    throw 'App does not declare the camera permission reason.'
 }
 if ($widgetPlist.plist.dict.key -notcontains 'NSExtension') {
     throw 'Widget extension configuration is missing.'

@@ -12,6 +12,8 @@
     <key>CFBundleShortVersionString</key><string>1.0</string>
     <key>CFBundleVersion</key><string>1</string>
     <key>LSRequiresIPhoneOS</key><true/>
+    <key>UILaunchScreen</key><dict/>
+    <key>NSCameraUsageDescription</key><string>用于在本机识别人体骨架并测试俯卧撑动作，不录制或上传视频。</string>
     <key>NSSupportsLiveActivities</key><true/>
     <key>CFBundleURLTypes</key>
     <array>

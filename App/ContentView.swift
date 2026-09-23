@@ -46,12 +46,25 @@ struct ContentView: View {
                         }
                     }
 
+                    Button {
+                        session.showChallenge = true
+                    } label: {
+                        Label("测试摄像头骨架识别", systemImage: "camera.viewfinder")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.orange)
+                    .controlSize(.large)
+
                     Text("演示时请另外在 iPhone 设置里配置屏幕使用时间的 App 限额。系统限额与本 App 倒计时不会自动同步。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
                 .padding(24)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemBackground).ignoresSafeArea())
             .navigationTitle("专注俯卧撑")
             .navigationDestination(isPresented: $session.showChallenge) {
                 ChallengeView()
