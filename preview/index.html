@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus Squat · Windows 界面预览</title>
+  <style>
+    :root { --accent: #6bf5c4; --card-alpha: .94; --font-scale: 1; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; color: #eaf5f4; font: 15px/1.45 "Segoe UI", "Microsoft YaHei", sans-serif; background: radial-gradient(circle at 75% 10%, #1a4948, transparent 34%), #071217; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .workspace { max-width: 1200px; margin: auto; padding: 32px 22px 60px; display: grid; grid-template-columns: minmax(260px, 340px) minmax(430px, 1fr); gap: 32px; align-items: start; }
+    .panel { position: sticky; top: 24px; border: 1px solid #31504d; border-radius: 26px; padding: 24px; background: #102328; box-shadow: 0 20px 60px #0005; }
+    .eyebrow { color: var(--accent); letter-spacing: .18em; font-size: 11px; font-weight: 800; }
+    h1 { font-size: 27px; margin: 8px 0 8px; letter-spacing: -.04em; }
+    .note { color: #a8bbba; font-size: 13px; margin: 0 0 20px; }
+    .tabs { display: flex; gap: 6px; padding: 5px; background: #08171b; border-radius: 14px; margin: 18px 0 22px; }
+    .tabs button { flex: 1; border: 0; border-radius: 10px; padding: 10px 5px; background: transparent; color: #a8bbba; font-size: 12px; font-weight: 700; }
+    .tabs button.active { background: var(--accent); color: #06201c; }
+    .control { margin: 17px 0; }
+    .control label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 650; margin-bottom: 8px; }
+    .control output { color: var(--accent); }
+    input[type=range] { width: 100%; accent-color: var(--accent); }
+    input[type=color] { border: 0; width: 100%; height: 36px; background: transparent; cursor: pointer; }
+    select, input[type=number] { color: white; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #43615d; background: #183137; }
+    .panel-actions { display: flex; gap: 9px; margin-top: 24px; }
+    .panel-actions button { flex: 1; padding: 11px; border-radius: 12px; border: 1px solid #45645e; background: #20373a; color: white; font-weight: 700; font-size: 12px; }
+    .panel-actions button:first-child { background: var(--accent); color: #08201b; border-color: transparent; }
+    .preview-wrap { display: flex; flex-direction: column; align-items: center; }
+    .preview-caption { width: 430px; max-width: 100%; display: flex; justify-content: space-between; color: #b1c9c4; font-size: 12px; margin-bottom: 12px; }
+    .phone { position: relative; flex: none; width: 430px; height: 932px; border: 9px solid #262c30; border-radius: 55px; overflow: hidden; background: #07151c; box-shadow: 0 0 0 2px #70817e, 0 35px 100px #0009; }
+    .phone::after { content: ""; position: absolute; inset: 0; border-radius: 46px; border: 1px solid #ffffff15; pointer-events: none; z-index: 10; }
+    .screen { position: absolute; inset: 0; display: none; overflow: hidden; }
+    .screen.active { display: block; }
+    .statusbar { position: absolute; top: 0; left: 0; right: 0; z-index: 5; height: 55px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; color: white; font-size: 14px; font-weight: 750; }
+    .island { width: 125px; height: 33px; border-radius: 25px; background: black; position: absolute; left: 50%; top: 8px; transform: translateX(-50%); }
+    .home { overflow-y: auto; background: radial-gradient(circle at 100% 0, #24493f 0, transparent 34%), #09171e; padding: 77px 23px 34px; font-size: calc(15px * var(--font-scale)); }
+    .brand { display: flex; gap: 8px; align-items: center; font-size: .85em; font-weight: 800; letter-spacing: .14em; }
+    .brand .mark { color: var(--accent); font-size: 23px; }
+    .demo-badge { margin-left: auto; color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); padding: 7px 10px; border-radius: 20px; font-size: .8em; letter-spacing: 0; }
+    .hero-title { font-size: 2.9em; line-height: 1.13; letter-spacing: -.06em; margin: 34px 0 9px; }
+    .subtle { color: #9baeb2; font-size: .92em; }
+    .workout-card { margin-top: 28px; border: 1px solid #4b7770; border-radius: 28px; padding: 22px; background: linear-gradient(145deg, #1d4142, #102830); }
+    .workout-card .iconbox { width: 64px; height: 64px; border-radius: 20px; background: var(--accent); color: #09201c; display: grid; place-items: center; font-size: 29px; }
+    .workout-card .up { float: right; color: var(--accent); font-size: 24px; }
+    .workout-card .kicker { color: var(--accent); font-size: .85em; font-weight: 700; margin-top: 22px; }
+    .workout-card h2 { font-size: 2.1em; line-height: 1.1; margin: 8px 0; }
+    .mini-pill { display: inline-block; border-radius: 12px; padding: 9px 11px; margin-top: 19px; background: #ffffff19; color: #d0e0df; font-size: .82em; }
+    .timer-card { border-radius: 23px; background: #ffffff12; padding: 19px; margin-top: 25px; }
+    .timer-title { display: flex; justify-content: space-between; font-weight: 700; }
+    .timer-title b { color: var(--accent); }
+    .segmented { display: flex; gap: 3px; background: #1c292e; border-radius: 9px; padding: 3px; margin-top: 14px; }
+    .segmented button { flex: 1; border: 0; background: none; color: #b5c3c6; padding: 8px; border-radius: 7px; font-size: .8em; }
+    .segmented button.chosen { background: #465558; color: white; }
+    .primary, .secondary { display: block; width: 100%; border: 0; border-radius: 17px; height: 56px; font-weight: 750; margin-top: 12px; }
+    .primary { background: var(--accent); color: #05251c; font-size: 1.05em; }
+    .secondary { background: #ffffff19; color: white; }
+    .footnote { font-size: .79em; color: #8ba3a5; margin: 20px 0 0; }
+    .camera { background: radial-gradient(circle at 50% 34%, #406c72, #122b32 48%, #06151d 100%); }
+    .camera .grid { position: absolute; inset: 80px 0 0; opacity: .18; background-image: linear-gradient(#fff3 1px, transparent 1px),linear-gradient(90deg,#fff3 1px,transparent 1px); background-size: 38px 38px; }
+    .camera::before { content: ""; position: absolute; inset: 0; z-index: 2; background: linear-gradient(#000a, transparent 28%, transparent 58%, #000e); pointer-events: none; }
+    .camera-top { position: absolute; z-index: 3; top: 70px; left: 18px; right: 18px; display: flex; justify-content: space-between; align-items: center; }
+    .close { width: 44px; height: 44px; border-radius: 50%; border: 0; background: #0009; color: white; font-size: 20px; }
+    .live { background: #0009; padding: 10px 13px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .live::before { content: "●"; color: var(--accent); margin-right: 8px; }
+    .mock-label { position: absolute; z-index: 3; top: 134px; left: 21px; color: #d2e4e2; background: #08232bb8; border-radius: 8px; padding: 5px 9px; font-size: 11px; }
+    svg.figure { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .camera-card { position: absolute; z-index: 3; left: 16px; right: 16px; bottom: 18px; border-radius: 28px; padding: 20px; background: rgba(13,31,39,var(--card-alpha)); border: 1px solid #ffffff23; color: white; font-size: calc(15px * var(--font-scale)); }
+    .camera-head { display: flex; justify-content: space-between; align-items: center; }
+    .camera-head h2 { margin: 0; font-size: 1.75em; }
+    .phase { color: var(--accent); font-size: .9em; margin-top: 4px; font-weight: 700; }
+    .ring { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(var(--accent) var(--ring-percent,0%), #ffffff2a 0); display: grid; place-content: center; text-align: center; position: relative; }
+    .ring::before { content: ""; position: absolute; inset: 6px; background: #0d1f27; border-radius: 50%; }
+    .ring strong { font-size: 28px; line-height: 1; position: relative; }
+    .ring small { color: #b9c9c9; font-size: 11px; position: relative; }
+    .line { height: 1px; background: #ffffff2a; margin: 17px 0; }
+    .camera-status { min-height: 44px; font-size: 1.08em; font-weight: 650; }
+    .metric { display: flex; justify-content: space-between; color: #adbfbd; font-size: .85em; }
+    .metric b { color: var(--accent); }
+    .bar { height: 7px; background: #ffffff2b; border-radius: 8px; overflow: hidden; margin: 13px 0 15px; }
+    .bar span { display: block; height: 100%; width: 0; background: var(--accent); border-radius: inherit; }
+    .hint { margin: 0; color: #a6b8b9; font-size: .79em; }
+    .island-demo { background: linear-gradient(170deg,#191e2b,#080d1a); }
+    .island-demo .lock-title { position: absolute; top: 185px; width: 100%; text-align: center; font-size: 74px; font-weight: 300; letter-spacing: -.06em; }
+    .lock-sub { position: absolute; top: 285px; width: 100%; text-align: center; color: #dae5ec; }
+    .activity { position: absolute; top: 420px; left: 20px; right: 20px; border-radius: 24px; padding: 20px; background: #141d25; }
+    .activity h2 { font-size: 18px; margin: 0 0 10px; }
+    .activity .countdown { font-size: 36px; font-weight: 800; }
+    .island-demo .island { display: flex; align-items: center; justify-content: space-around; color: var(--accent); font-size: 12px; font-weight: 700; z-index: 6; }
+    body:has(#island-demo.active) .statusbar .island { display: none; }
+    .help { color: #9eb7b3; font-size: 12px; text-align: center; max-width: 430px; margin-top: 16px; }
+    @media (max-width: 840px) { .workspace { display: block; padding: 16px; } .panel { position: static; margin-bottom: 28px; } .phone { transform: scale(.82); transform-origin: top center; margin-bottom: -160px; } }
+  </style>
+</head>
+<body>
+  <main class="workspace">
+    <aside class="panel">
+      <div class="eyebrow">LOCAL DESIGN PREVIEW</div>
+      <h1>先在电脑上调界面</h1>
+      <p class="note">这是 SwiftUI 界面的交互草图。右侧相机画面和骨架是模拟的，真实识别仍需 iPhone 测试。</p>
+      <div class="tabs" role="tablist">
+        <button data-tab="home" class="active">首页</button>
+        <button data-tab="camera">动作检测</button>
+        <button data-tab="island-demo">灵动岛</button>
+      </div>
+      <div class="control"><label for="accent">主题颜色 <output id="accentValue">#6BF5C4</output></label><input id="accent" type="color" value="#6bf5c4"></div>
+      <div class="control"><label for="opacity">相机卡片透明度 <output id="opacityValue">94%</output></label><input id="opacity" type="range" min="65" max="100" value="94"></div>
+      <div class="control"><label for="fontScale">字体大小 <output id="fontScaleValue">100%</output></label><input id="fontScale" type="range" min="85" max="120" value="100"></div>
+      <div class="control"><label for="target">下蹲目标次数</label><input id="target" type="number" min="1" max="99" value="8"></div>
+      <div class="control"><label for="depth">模拟下蹲幅度 <output id="depthValue">0%</output></label><input id="depth" type="range" min="0" max="50" value="0"></div>
+      <div class="control"><label for="phaseSelect">识别状态</label><select id="phaseSelect"><option>准备下蹲</option><option>正在校准</option><option>下蹲中</option><option>已蹲下</option><option>起立中</option><option>动作完成</option><option>调整站位</option></select></div>
+      <div class="panel-actions"><button id="demoRep">模拟完成一次</button><button id="copy">复制当前参数</button><button id="reset">重置</button></div>
+      <p class="note" id="copyMessage" style="margin:16px 0 0">调好后把参数或截图发给我，我会改进真正的 SwiftUI 界面，再统一编译。</p>
+    </aside>
+    <section class="preview-wrap">
+      <div class="preview-caption"><span>iPhone 15 Pro Max · 430 × 932</span><span>本地视觉预览</span></div>
+      <div class="phone">
+        <div class="screen home active" id="home">
+          <div class="brand"><span class="mark">⬡</span><span>FOCUS / MOVE</span><span class="demo-badge">演示版</span></div>
+          <h1 class="hero-title">放下屏幕，<br>动起来。</h1>
+          <div class="subtle">设定专注倒计时，再用一组下蹲结束这次休息。</div>
+          <div class="workout-card"><span class="up">↗</span><div class="iconbox">♙</div><div class="kicker">今日动作</div><h2><span data-target>8</span> 次下蹲</h2><div class="subtle">前置镜头识别 · 实时骨架反馈</div><span class="mini-pill">▣ &nbsp;站在手机正前方，全身入镜即可</span></div>
+          <div class="timer-card"><div class="timer-title"><span>◷ &nbsp;专注倒计时</span><b id="minutes">30 分钟</b></div><p class="subtle">剩余时间会显示在灵动岛。长按可查看进度，轻点进入下蹲页面。</p><div class="segmented"><button data-minutes="1">1 分钟测试</button><button data-minutes="30" class="chosen">30 分钟演示</button></div></div>
+          <button class="primary" id="openCamera">▣ &nbsp;开始下蹲检测 &nbsp;→</button>
+          <button class="secondary" id="openIsland">启动灵动岛倒计时</button>
+          <p class="footnote">屏幕使用时间的 App 限额需在 iPhone 设置中单独配置；本演示不会自动读取或修改系统限额。</p>
+        </div>
+        <div class="screen camera" id="camera">
+          <div class="grid"></div>
+          <svg class="figure" id="poseSvg" viewBox="0 0 430 932" aria-label="模拟骨架"></svg>
+          <div class="camera-top"><button class="close" id="closeCamera" aria-label="返回">×</button><div class="live">前置镜头 · 实时识别</div></div>
+          <div class="mock-label">模拟画面 · 非真实摄像头</div>
+          <div class="camera-card">
+            <div class="camera-head"><div><h2>下蹲训练</h2><div class="phase" id="phaseText">准备下蹲</div></div><div class="ring" id="ring"><strong id="reps">0</strong><small>/ <span data-target>8</span></small></div></div>
+            <div class="line"></div>
+            <div class="camera-status" id="status">慢慢下蹲，再站直计 1 次</div>
+            <div class="metric"><span>♙ &nbsp;下蹲幅度</span><b id="metricDepth">0%</b></div>
+            <div class="bar"><span id="depthBar"></span></div>
+            <p class="hint">手机固定在正前方，先站直校准，保持头到脚入镜。蹲下再站直计 1 次。</p>
+          </div>
+        </div>
+        <div class="screen island-demo" id="island-demo">
+          <div class="island" id="liveIsland"><span>♙</span><span id="islandTime">30:00</span></div>
+          <div class="lock-title">9:41</div><div class="lock-sub">星期三 · 9月23日</div>
+          <div class="activity"><h2>放下手机，做组下蹲</h2><div class="countdown" id="lockTime">30:00</div><p>倒计时结束后，完成 <span data-target>8</span> 次下蹲</p><div class="bar"><span style="width:42%"></span></div></div>
+        </div>
+        <div class="statusbar"><span>9:41</span><span class="island"></span><span>▮▮ ▰</span></div>
+      </div>
+      <p class="help">电脑预览用于集中修改排版和视觉；相机帧、Vision 骨架、灵动岛系统渲染仍以 iPhone 真机为准。</p>
+    </section>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const defaults = {accent:"#6bf5c4",opacity:94,fontScale:100,target:8,depth:0,phase:"准备下蹲",reps:0,minutes:30};
+    let settings = {...defaults, ...JSON.parse(localStorage.getItem("focus-squat-preview") || "{}")};
+    const messages = {"准备下蹲":"慢慢下蹲，再站直计 1 次","正在校准":"保持站直，正在记录起始姿势","下蹲中":"继续下蹲，保持动作稳定","已蹲下":"下蹲已识别，站起来完成这次","起立中":"向上站直，完成这一次","动作完成":"完成一次下蹲","调整站位":"请后退一点，让髋、膝盖和脚踝都进入画面"};
+    function show(tab) {
+      document.querySelectorAll(".screen").forEach(el => el.classList.toggle("active",el.id===tab));
+      document.querySelectorAll("[data-tab]").forEach(el => el.classList.toggle("active",el.dataset.tab===tab));
+    }
+    function skeleton(depth) {
+      const d=depth/50, hipY=392+d*105, kneeY=528+d*25;
+      const p={head:[215,183],neck:[215,233],ls:[175,257],rs:[255,257],le:[156,326],re:[274,326],lw:[176,388],rw:[254,388],lh:[187,hipY],rh:[243,hipY],lk:[177,kneeY],rk:[253,kneeY],la:[177,614],ra:[253,614]};
+      const edges=[["neck","ls"],["neck","rs"],["ls","le"],["le","lw"],["rs","re"],["re","rw"],["ls","lh"],["rs","rh"],["lh","rh"],["lh","lk"],["lk","la"],["rh","rk"],["rk","ra"]];
+      const lines=edges.map(([a,b])=>'<line x1="'+p[a][0]+'" y1="'+p[a][1]+'" x2="'+p[b][0]+'" y2="'+p[b][1]+'" stroke="'+settings.accent+'" stroke-width="4" stroke-linecap="round"/>').join("");
+      const dots=Object.values(p).map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="5" fill="#f3b66d"/>').join("");
+      $("poseSvg").innerHTML='<ellipse cx="215" cy="620" rx="150" ry="26" fill="#07131d88"/><circle cx="215" cy="183" r="30" fill="#afc9c488"/><path d="M175 252 Q215 230 255 252 L243 '+hipY+' L187 '+hipY+' Z" fill="#9fb7b17a"/>'+lines+dots;
+    }
+    function render() {
+      document.documentElement.style.setProperty("--accent",settings.accent);
+      document.documentElement.style.setProperty("--card-alpha",settings.opacity/100);
+      document.documentElement.style.setProperty("--font-scale",settings.fontScale/100);
+      ["accent","opacity","fontScale","target","depth"].forEach(k=>$(k).value=settings[k]);
+      $("phaseSelect").value=settings.phase;
+      $("accentValue").textContent=settings.accent.toUpperCase();
+      $("opacityValue").textContent=settings.opacity+"%";
+      $("fontScaleValue").textContent=settings.fontScale+"%";
+      $("depthValue").textContent=settings.depth+"%";
+      $("metricDepth").textContent=settings.depth+"%";
+      $("depthBar").style.width=Math.min(100,settings.depth/40*100)+"%";
+      $("phaseText").textContent=settings.phase;
+      $("status").textContent=messages[settings.phase];
+      $("reps").textContent=settings.reps;
+      $("ring").style.setProperty("--ring-percent",(Math.min(1,settings.reps/Math.max(1,settings.target))*100)+"%");
+      document.querySelectorAll("[data-target]").forEach(el=>el.textContent=settings.target);
+      $("minutes").textContent=settings.minutes+" 分钟";
+      $("islandTime").textContent=settings.minutes+":00";
+      $("lockTime").textContent=settings.minutes+":00";
+      document.querySelectorAll("[data-minutes]").forEach(el=>el.classList.toggle("chosen",Number(el.dataset.minutes)===settings.minutes));
+      skeleton(settings.depth);
+      localStorage.setItem("focus-squat-preview",JSON.stringify(settings));
+    }
+    document.querySelectorAll("[data-tab]").forEach(el=>el.onclick=()=>show(el.dataset.tab));
+    ["accent","opacity","fontScale","target","depth"].forEach(k=>$(k).oninput=()=>{settings[k]=k==="accent"?$(k).value:Number($(k).value);render()});
+    $("phaseSelect").onchange=()=>{settings.phase=$("phaseSelect").value;render()};
+    document.querySelectorAll("[data-minutes]").forEach(el=>el.onclick=()=>{settings.minutes=Number(el.dataset.minutes);render()});
+    $("demoRep").onclick=()=>{settings.reps=Math.min(settings.reps+1,settings.target);settings.phase="动作完成";settings.depth=0;show("camera");render()};
+    $("copy").onclick=async()=>{
+      const value=JSON.stringify(settings,null,2);
+      try { await navigator.clipboard.writeText(value); }
+      catch {
+        const field=document.createElement("textarea");
+        field.value=value;
+        document.body.appendChild(field);
+        field.select();
+        const copied=document.execCommand("copy");
+        field.remove();
+        if (!copied) { $("copyMessage").textContent="浏览器未允许复制；请用本地预览链接打开后重试。"; return; }
+      }
+      $("copyMessage").textContent="参数已复制。把它发给我，我会同步到 SwiftUI。";
+    };
+    $("reset").onclick=()=>{settings={...defaults};render()};
+    $("openCamera").onclick=()=>show("camera");
+    $("closeCamera").onclick=()=>show("home");
+    $("openIsland").onclick=()=>show("island-demo");
+    render();
+  </script>
+</body>
+</html>

@@ -32,3 +32,7 @@
 ## 本地预检
 
 在项目目录运行 `powershell -ExecutionPolicy Bypass -File scripts/check-project.ps1`。该检查只验证项目文件、plist 和能力配置，不代表 Swift 编译或真机功能测试。
+
+## Windows 界面预览
+
+可直接用浏览器打开 `preview/index.html`，在电脑上切换首页、动作检测和灵动岛草图，调整主题色、卡片透明度、字体大小、目标次数与模拟下蹲状态。参数保存在本机浏览器；使用“复制当前参数”把调整结果发给开发者，再同步到 SwiftUI。这个页面模拟界面与骨架，不运行 iPhone 相机、Apple Vision 或真正的灵动岛。修改预览页面不会自动修改 iOS App；SwiftUI 真机效果仍需最终安装验证。
