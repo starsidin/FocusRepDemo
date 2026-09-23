@@ -30,6 +30,13 @@ if ($appPlist.plist.dict.key -notcontains 'CFBundleURLTypes') {
 if ($widgetPlist.plist.dict.key -notcontains 'NSExtension') {
     throw 'Widget extension configuration is missing.'
 }
+foreach ($plistPath in @('App/Info.plist', 'Widget/Info.plist')) {
+    $plistText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $projectRoot $plistPath)
+    $displayName = [regex]::Match($plistText, '<key>CFBundleDisplayName</key>\s*<string>([^<]+)</string>').Groups[1].Value
+    if (-not $displayName -or $displayName -cmatch '[^\x20-\x7E]') {
+        throw "$plistPath needs an ASCII display name for AltStore signing."
+    }
+}
 
 $projectSpec = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $projectRoot 'project.yml')
 if ($projectSpec -notmatch 'FocusRepWidget:' -or $projectSpec -notmatch 'embed: true') {
