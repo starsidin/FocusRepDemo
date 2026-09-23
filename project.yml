@@ -1,0 +1,45 @@
+name: FocusRepDemo
+options:
+  bundleIdPrefix: com.focusrep.demo
+settings:
+  base:
+    SWIFT_VERSION: 5.9
+    IPHONEOS_DEPLOYMENT_TARGET: 17.0
+    TARGETED_DEVICE_FAMILY: 1
+    CODE_SIGN_STYLE: Automatic
+targets:
+  FocusRepDemo:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+        excludes:
+          - Info.plist
+      - path: Shared
+    dependencies:
+      - target: FocusRepWidget
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.focusrep.demo.app
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: App/Info.plist
+  FocusRepWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+        excludes:
+          - Info.plist
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.focusrep.demo.app.widget
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Widget/Info.plist
+        SKIP_INSTALL: YES
+schemes:
+  FocusRepDemo:
+    build:
+      targets:
+        FocusRepDemo: all

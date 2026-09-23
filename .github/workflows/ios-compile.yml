@@ -1,0 +1,50 @@
+name: Compile iOS demo
+
+on:
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Compile for iPhone Simulator
+        run: |
+          xcodebuild \
+            -project FocusRepDemo.xcodeproj \
+            -scheme FocusRepDemo \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+      - name: Compile for iPhone device without signing
+        run: |
+          xcodebuild \
+            -project FocusRepDemo.xcodeproj \
+            -scheme FocusRepDemo \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+      - name: Package unsigned build outputs
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            DerivedData/Build/Products/Debug-iphonesimulator/FocusRepDemo.app \
+            FocusRepDemo-simulator.zip
+          ditto -c -k --sequesterRsrc --keepParent \
+            DerivedData/Build/Products/Debug-iphoneos/FocusRepDemo.app \
+            FocusRepDemo-unsigned-iphone.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FocusRepDemo-unsigned-builds
+          path: |
+            FocusRepDemo-simulator.zip
+            FocusRepDemo-unsigned-iphone.zip
