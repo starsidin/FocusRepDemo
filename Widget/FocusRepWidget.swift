@@ -19,9 +19,9 @@ struct FocusRepLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Label("放下手机", systemImage: "hand.raised.fill")
+                    Label("活动一下", systemImage: "figure.strengthtraining.functional")
                         .font(.headline)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color(red: 0.42, green: 0.96, blue: 0.77))
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     countdown(context: context)
@@ -30,27 +30,27 @@ struct FocusRepLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("倒计时结束后，完成 \(context.state.pushUpTarget) 个俯卧撑")
+                        Text("倒计时结束后，完成 \(context.state.pushUpTarget) 次下蹲")
                             .font(.caption)
                         ProgressView(
                             timerInterval: context.state.startedAt...context.state.endsAt,
                             countsDown: false
                         )
-                        .tint(.orange)
+                        .tint(Color(red: 0.42, green: 0.96, blue: 0.77))
                     }
                     .padding(.top, 6)
                 }
             } compactLeading: {
-                Image(systemName: "hand.raised.fill")
-                    .foregroundStyle(.orange)
+                Image(systemName: "figure.strengthtraining.functional")
+                    .foregroundStyle(Color(red: 0.42, green: 0.96, blue: 0.77))
             } compactTrailing: {
                 countdown(context: context)
                     .monospacedDigit()
                     .font(.caption2)
                     .frame(maxWidth: 55)
             } minimal: {
-                Image(systemName: "hand.raised.fill")
-                    .foregroundStyle(.orange)
+                Image(systemName: "figure.strengthtraining.functional")
+                    .foregroundStyle(Color(red: 0.42, green: 0.96, blue: 0.77))
             }
             .widgetURL(URL(string: "focusrep://challenge"))
         }
@@ -66,7 +66,7 @@ struct FocusRepLiveActivity: Widget {
 
     private func lockScreenView(context: ActivityViewContext<FocusActivityAttributes>) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("放下手机，做组俯卧撑", systemImage: "hand.raised.fill")
+            Label("放下手机，做组下蹲", systemImage: "figure.strengthtraining.functional")
                 .font(.headline)
             countdown(context: context)
                 .font(.title.bold())
@@ -75,7 +75,7 @@ struct FocusRepLiveActivity: Widget {
                 timerInterval: context.state.startedAt...context.state.endsAt,
                 countsDown: false
             )
-            .tint(.orange)
+            .tint(Color(red: 0.42, green: 0.96, blue: 0.77))
         }
         .padding()
     }

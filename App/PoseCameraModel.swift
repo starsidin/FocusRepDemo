@@ -35,7 +35,8 @@ struct PoseSnapshot {
 final class PoseCameraModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     @Published private(set) var pose: PoseSnapshot?
     @Published private(set) var completed = 0
-    @Published private(set) var elbowAngle: Double?
+    @Published private(set) var depthPercent: Int?
+    @Published private(set) var phaseLabel = "准备中"
     @Published private(set) var statusText = "正在准备相机…"
 
     let captureSession = AVCaptureSession()
@@ -44,12 +45,17 @@ final class PoseCameraModel: NSObject, ObservableObject, AVCaptureVideoDataOutpu
     private let visionRequest = VNDetectHumanBodyPoseRequest()
     private var configured = false
     private var frameNumber = 0
-    private var phase: Phase = .waitingForTop
+    private var phase: Phase = .calibrating
     private var counted = 0
     private var lastPoseTime = Date.distantPast
+    private var standingHeight: CGFloat?
+    private var standingThighHeight: CGFloat?
+    private var calibrationSamples = 0
+    private var bottomFrames = 0
+    private var topFrames = 0
 
     private enum Phase {
-        case waitingForTop, atTop, atBottom
+        case calibrating, ready, down
     }
 
     func start() {
@@ -134,15 +140,14 @@ final class PoseCameraModel: NSObject, ObservableObject, AVCaptureVideoDataOutpu
         }
 
         guard let observation = visionRequest.results?.first else {
-            if Date().timeIntervalSince(lastPoseTime) > 1.5 { phase = .waitingForTop }
-            publish(pose: nil, angle: nil, status: "未检测到人体，请退后让全身进入画面")
+            resetTrackingIfStale()
+            publish(pose: nil, depth: nil, phaseLabel: "等待入镜", status: "请站到镜头前，让全身进入画面")
             return
         }
 
-        lastPoseTime = Date()
         var points: [BodyJoint: CGPoint] = [:]
         for joint in BodyJoint.allCases {
-            if let point = try? observation.recognizedPoint(joint.visionName), point.confidence >= 0.45 {
+            if let point = try? observation.recognizedPoint(joint.visionName), point.confidence >= 0.4 {
                 points[joint] = point.location
             }
         }
@@ -150,86 +155,126 @@ final class PoseCameraModel: NSObject, ObservableObject, AVCaptureVideoDataOutpu
         let size = CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
         let snapshot = PoseSnapshot(points: points, imageSize: size)
         guard let metrics = Self.measure(snapshot) else {
-            phase = .waitingForTop
-            publish(pose: snapshot, angle: nil, status: "已看到骨架，请露出肩、手肘、手腕、髋和脚踝")
+            resetTrackingIfStale()
+            publish(pose: snapshot, depth: nil, phaseLabel: "调整站位", status: "请后退一点，让髋、膝盖和脚踝都进入画面")
             return
         }
 
+        lastPoseTime = Date()
+        if phase == .calibrating {
+            guard metrics.thighHeight / metrics.shinHeight >= 0.58 else {
+                calibrationSamples = 0
+                publish(pose: snapshot, depth: nil, phaseLabel: "先站直", status: "先站直，保持全身在画面里")
+                return
+            }
+            standingHeight = max(standingHeight ?? 0, metrics.hipHeight)
+            standingThighHeight = max(standingThighHeight ?? 0, metrics.thighHeight)
+            calibrationSamples += 1
+            if calibrationSamples < 5 {
+                publish(pose: snapshot, depth: nil, phaseLabel: "正在校准", status: "保持站直，正在记录起始姿势")
+                return
+            }
+            phase = .ready
+        }
+
+        guard let standingHeight, let standingThighHeight else { return }
+        let depth = max(0, min(100, Int(((1 - metrics.hipHeight / standingHeight) * 100).rounded())))
         let status: String
-        if metrics.bodyAngle < 145 || metrics.tilt > 35 {
-            phase = .waitingForTop
-            status = "请侧身摆好平板姿势，再开始俯卧撑"
-        } else {
-            switch phase {
-            case .waitingForTop:
-                if metrics.elbow >= 155 { phase = .atTop }
-                status = "先伸直手臂，准备下压"
-            case .atTop:
-                if metrics.elbow <= 100 {
-                    phase = .atBottom
-                    status = "已检测到下压，推起身体"
+        let label: String
+        switch phase {
+        case .calibrating:
+            status = "保持站直，正在记录起始姿势"
+            label = "正在校准"
+        case .ready:
+            topFrames = 0
+            if depth >= 22 && metrics.thighHeight <= standingThighHeight * 0.7 {
+                bottomFrames += 1
+                if bottomFrames >= 2 {
+                    phase = .down
+                    bottomFrames = 0
+                    status = "下蹲已识别，站起来完成这次"
+                    label = "已蹲下"
                 } else {
-                    status = "弯曲手臂，继续下压"
+                    status = "继续下蹲，保持动作稳定"
+                    label = "下蹲中"
                 }
-            case .atBottom:
-                if metrics.elbow >= 155 {
-                    phase = .atTop
+            } else {
+                bottomFrames = 0
+                status = "慢慢下蹲，再站直计 1 次"
+                label = "准备下蹲"
+            }
+        case .down:
+            if depth <= 12 && metrics.thighHeight >= standingThighHeight * 0.78 {
+                topFrames += 1
+                if topFrames >= 2 {
+                    phase = .ready
+                    topFrames = 0
                     counted += 1
-                    status = "完成第 \(counted) 个俯卧撑"
+                    status = "完成第 \(counted) 次下蹲"
+                    label = "动作完成"
                 } else {
-                    status = "伸直手臂，完成这一次"
+                    status = "继续站直，完成这一次"
+                    label = "起立中"
                 }
+            } else {
+                topFrames = 0
+                status = "向上站直，完成这一次"
+                label = "起立中"
             }
         }
-        publish(pose: snapshot, angle: metrics.elbow, status: status)
+        publish(pose: snapshot, depth: depth, phaseLabel: label, status: status)
     }
 
     private struct Metrics {
-        let elbow: Double
-        let bodyAngle: Double
-        let tilt: Double
+        let hipHeight: CGFloat
+        let thighHeight: CGFloat
+        let shinHeight: CGFloat
     }
 
     private static func measure(_ pose: PoseSnapshot) -> Metrics? {
-        let sides: [(BodyJoint, BodyJoint, BodyJoint, BodyJoint, BodyJoint)] = [
-            (.leftShoulder, .leftElbow, .leftWrist, .leftHip, .leftAnkle),
-            (.rightShoulder, .rightElbow, .rightWrist, .rightHip, .rightAnkle)
+        let sides: [(BodyJoint, BodyJoint, BodyJoint)] = [
+            (.leftHip, .leftKnee, .leftAnkle),
+            (.rightHip, .rightKnee, .rightAnkle)
         ]
-        for (shoulderKey, elbowKey, wristKey, hipKey, ankleKey) in sides {
-            guard let shoulder = pose.points[shoulderKey],
-                  let elbow = pose.points[elbowKey],
-                  let wrist = pose.points[wristKey],
-                  let hip = pose.points[hipKey],
+        var measurements: [Metrics] = []
+        for (hipKey, kneeKey, ankleKey) in sides {
+            guard let hip = pose.points[hipKey],
+                  let knee = pose.points[kneeKey],
                   let ankle = pose.points[ankleKey] else { continue }
-            let size = pose.imageSize
-            func pixel(_ point: CGPoint) -> CGPoint {
-                CGPoint(x: point.x * size.width, y: point.y * size.height)
-            }
-            let s = pixel(shoulder), e = pixel(elbow), w = pixel(wrist)
-            let h = pixel(hip), a = pixel(ankle)
-            return Metrics(
-                elbow: angle(s, e, w),
-                bodyAngle: angle(s, h, a),
-                tilt: atan2(abs(Double(h.y - s.y)), abs(Double(h.x - s.x))) * 180 / Double.pi
-            )
+            let hipHeight = hip.y - ankle.y
+            let shinHeight = knee.y - ankle.y
+            guard hipHeight > 0.08, shinHeight > 0.05 else { continue }
+            measurements.append(Metrics(
+                hipHeight: hipHeight,
+                thighHeight: hip.y - knee.y,
+                shinHeight: shinHeight
+            ))
         }
-        return nil
+        guard !measurements.isEmpty else { return nil }
+        let count = CGFloat(measurements.count)
+        return Metrics(
+            hipHeight: measurements.reduce(0) { $0 + $1.hipHeight } / count,
+            thighHeight: measurements.reduce(0) { $0 + $1.thighHeight } / count,
+            shinHeight: measurements.reduce(0) { $0 + $1.shinHeight } / count
+        )
     }
 
-    private static func angle(_ a: CGPoint, _ center: CGPoint, _ b: CGPoint) -> Double {
-        let ax = Double(a.x - center.x), ay = Double(a.y - center.y)
-        let bx = Double(b.x - center.x), by = Double(b.y - center.y)
-        let length = hypot(ax, ay) * hypot(bx, by)
-        guard length > 1 else { return 0 }
-        let cosine = max(-1.0, min(1.0, (ax * bx + ay * by) / length))
-        return acos(cosine) * 180 / .pi
+    private func resetTrackingIfStale() {
+        guard Date().timeIntervalSince(lastPoseTime) > 1.5 else { return }
+        phase = .calibrating
+        standingHeight = nil
+        standingThighHeight = nil
+        calibrationSamples = 0
+        bottomFrames = 0
+        topFrames = 0
     }
 
-    private func publish(pose snapshot: PoseSnapshot?, angle: Double?, status: String) {
+    private func publish(pose snapshot: PoseSnapshot?, depth: Int?, phaseLabel: String, status: String) {
         let total = counted
         DispatchQueue.main.async { [weak self] in
             self?.pose = snapshot
-            self?.elbowAngle = angle
+            self?.depthPercent = depth
+            self?.phaseLabel = phaseLabel
             self?.completed = total
             self?.statusText = status
         }
