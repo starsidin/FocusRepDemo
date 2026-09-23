@@ -15,9 +15,16 @@
 
 ## 开发与编译
 
-源代码可在 Windows 上编辑和审查。iOS 编译需要 Xcode 与 macOS；GitHub Actions 的 `macos-15` 构建机可在仓库上传后执行 `.github/workflows/ios-compile.yml`。工作流先生成 Xcode 工程，再分别编译模拟器和 iPhone 设备目标，**不签名，也不生成可直接安装的 IPA**。
+源代码可在 Windows 上编辑和审查。iOS 编译需要 Xcode 与 macOS；GitHub Actions 的 `macos-15` 构建机可在仓库上传后执行 `.github/workflows/ios-compile.yml`。工作流先生成 Xcode 工程，再分别编译模拟器和 iPhone 设备目标，输出模拟器 ZIP 和 **未签名的 iPhone IPA**。IPA 包含 App 与实时活动所需的 Widget 扩展，但还不能直接在手机上运行。
 
-真机安装还需 Apple 签名配置和一部支持灵动岛的 iPhone。首次完整编译、灵动岛手势与真机显示必须在 macOS 构建机和 iPhone 上验收；Windows 本机无法完成这些检查。
+## 免费账号安装到自己的 iPhone（Windows）
+
+1. 按 [AltStore Classic 的 Windows 官方教程](https://faq.altstore.io/altstore-classic/how-to-install-altstore-windows) 安装 Apple 官网版本的 iTunes、iCloud，以及 AltServer。若已有 iTunes，先核对是否为 Apple 官网版本。Apple ID 和验证码只在自己的电脑、手机上输入，不要上传到 GitHub。
+2. 用 USB 连接并解锁 iPhone，在手机上选择“信任这台电脑”。运行 AltServer，从系统托盘图标选择“Install AltStore”并选中 iPhone。按教程在手机的“设置 → 通用 → VPN 与设备管理”信任个人开发者，并在“设置 → 隐私与安全性 → 开发者模式”启用开发者模式。不同 iOS 版本的菜单文字可能略有差异。
+3. 到本仓库 GitHub Actions 中打开成功的“Compile iOS demo”运行，下载 `FocusRepDemo-unsigned-builds`，解压后找到 `FocusRepDemo-unsigned.ipa`。在 iPhone 上用 AltStore Classic 导入这个 IPA；安装时 AltStore/AltServer 会用你的免费 Apple 账号为 App 和扩展签名。电脑运行 AltServer，手机通过 USB 或同一 Wi-Fi 与电脑连接。
+4. 打开 App，手动启动 1 分钟测试倒计时，再检查锁屏与灵动岛的收起、长按展开、轻点跳转。实际显示和跳转以 iPhone 真机测试为准。
+
+免费 Apple 账号的个人测试签名约 7 天到期，需要用 AltStore 刷新或重新安装；Apple 还限制每台设备同时安装的个人测试 App 数量。详见 [Apple 官方账号说明](https://developer.apple.com/help/account/basics/about-your-developer-account) 和 [AltStore 刷新说明](https://faq.altstore.io/altstore-classic/your-altstore)。
 
 ## 本地预检
 

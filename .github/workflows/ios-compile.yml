@@ -7,7 +7,7 @@ jobs:
   compile:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate Xcode project
@@ -39,12 +39,17 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent \
             DerivedData/Build/Products/Debug-iphonesimulator/FocusRepDemo.app \
             FocusRepDemo-simulator.zip
-          ditto -c -k --sequesterRsrc --keepParent \
+          mkdir Payload
+          ditto \
             DerivedData/Build/Products/Debug-iphoneos/FocusRepDemo.app \
-            FocusRepDemo-unsigned-iphone.zip
-      - uses: actions/upload-artifact@v4
+            Payload/FocusRepDemo.app
+          test -d Payload/FocusRepDemo.app/PlugIns/FocusRepWidget.appex
+          ditto -c -k --sequesterRsrc --keepParent Payload FocusRepDemo-unsigned.ipa
+          unzip -l FocusRepDemo-unsigned.ipa | grep -F 'Payload/FocusRepDemo.app/PlugIns/FocusRepWidget.appex/'
+      - uses: actions/upload-artifact@v6
         with:
           name: FocusRepDemo-unsigned-builds
           path: |
             FocusRepDemo-simulator.zip
-            FocusRepDemo-unsigned-iphone.zip
+            FocusRepDemo-unsigned.ipa
+          if-no-files-found: error
