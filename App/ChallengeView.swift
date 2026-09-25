@@ -116,19 +116,17 @@ struct ChallengeView: View {
                         .foregroundStyle(.white.opacity(0.68))
                         .fixedSize(horizontal: false, vertical: true)
 
-                    if session.hasActivity && camera.completed >= session.pushUpTarget {
-                        Button {
-                            session.finish()
-                            dismiss()
-                        } label: {
-                            Label("完成任务", systemImage: "checkmark.circle.fill")
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 48)
+                    if let restEndsAt = session.restEndsAt {
+                        HStack {
+                            Label("完成目标 · 休息后自动开启下一轮", systemImage: "checkmark.circle.fill")
+                            Spacer()
+                            Text(timerInterval: Date()...restEndsAt, countsDown: true, showsHours: false)
+                                .monospacedDigit()
                         }
-                        .font(.headline)
-                        .buttonStyle(.plain)
-                        .foregroundStyle(Color(red: 0.06, green: 0.13, blue: 0.16))
-                        .background(mint, in: RoundedRectangle(cornerRadius: 14))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(mint)
+                        .padding(14)
+                        .background(mint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
                     }
                 }
                 .foregroundStyle(.white)
@@ -145,5 +143,10 @@ struct ChallengeView: View {
         .toolbar(.hidden, for: .navigationBar)
         .onAppear { camera.start() }
         .onDisappear { camera.stop() }
+        .onChange(of: camera.completed) {
+            if camera.completed >= session.pushUpTarget {
+                session.completeChallenge()
+            }
+        }
     }
 }
