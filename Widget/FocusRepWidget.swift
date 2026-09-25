@@ -30,7 +30,7 @@ struct FocusRepLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("倒计时结束后，完成 \(context.state.pushUpTarget) 次下蹲")
+                        Text("屏幕时间结束后，完成 \(context.state.pushUpTarget) 次下蹲")
                             .font(.caption)
                         ProgressView(
                             timerInterval: context.state.startedAt...context.state.endsAt,

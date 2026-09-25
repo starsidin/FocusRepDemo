@@ -1,10 +1,10 @@
-# 专注深蹲：iPhone 演示版
+# 专注深蹲：iPhone 版本
 
 这是一款仅用于演示的原生 iOS App。它在灵动岛显示预设倒计时、运动提示和时间进度；长按灵动岛查看展开内容，轻点进入下蹲任务页面。
 
 ## 已实现的边界
 
-- App 内手动开始 30 分钟倒计时；另有 1 分钟测试选项。
+- 首页提供“30 分钟”和“60 分钟（1）”两个选项。前者实际运行 30 分钟；后者为录屏用的加速模式，实际运行 1 分钟，并非真实 60 分钟控制。
 - 灵动岛收起、展开、最小化和锁屏画面。
 - 倒计时与时间进度条使用系统视图显示。
 - 点击实时活动跳到下蹲任务页。
@@ -23,7 +23,7 @@
 1. 按 [AltStore Classic 的 Windows 官方教程](https://faq.altstore.io/altstore-classic/how-to-install-altstore-windows) 安装 Apple 官网版本的 iTunes、iCloud，以及 AltServer。若已有 iTunes，先核对是否为 Apple 官网版本。Apple ID 和验证码只在自己的电脑、手机上输入，不要上传到 GitHub。
 2. 用 USB 连接并解锁 iPhone，在手机上选择“信任这台电脑”。运行 AltServer，从系统托盘图标选择“Install AltStore”并选中 iPhone。按教程在手机的“设置 → 通用 → VPN 与设备管理”信任个人开发者，并在“设置 → 隐私与安全性 → 开发者模式”启用开发者模式。不同 iOS 版本的菜单文字可能略有差异。
 3. 到本仓库 GitHub Actions 中打开成功的“Compile iOS demo”运行，下载 `FocusRepDemo-unsigned-builds`，解压后找到 `FocusRepDemo-unsigned.ipa`。在 iPhone 上用 AltStore Classic 导入这个 IPA；安装时 AltStore/AltServer 会用你的免费 Apple 账号为 App 和扩展签名。电脑运行 AltServer，手机通过 USB 或同一 Wi-Fi 与电脑连接。
-4. 打开 App，手动启动 1 分钟测试倒计时，再检查锁屏与灵动岛的收起、长按展开、轻点跳转。实际显示和跳转以 iPhone 真机测试为准。
+4. 打开 App，选择“60 分钟（1）”并点“开始运动屏幕时间控制”，检查 1 分钟加速模式下锁屏与灵动岛的收起、长按展开、轻点跳转。实际显示和跳转以 iPhone 真机测试为准。
 
 也可以从首页直接点“开始下蹲检测”，允许相机权限，把手机竖直固定在正前方、屏幕朝向自己，让头到脚进入画面。先站直约半秒完成校准，确认骨架贴合，再蹲下并站直，观察下蹲幅度和计数。视频帧只在本机交给 Vision 处理，不录制或上传。
 

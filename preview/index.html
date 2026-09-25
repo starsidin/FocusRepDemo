@@ -38,7 +38,6 @@
     .home { overflow-y: auto; background: radial-gradient(circle at 100% 0, #24493f 0, transparent 34%), #09171e; padding: 77px 23px 34px; font-size: calc(15px * var(--font-scale)); }
     .brand { display: flex; gap: 8px; align-items: center; font-size: .85em; font-weight: 800; letter-spacing: .14em; }
     .brand .mark { color: var(--accent); font-size: 23px; }
-    .demo-badge { margin-left: auto; color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); padding: 7px 10px; border-radius: 20px; font-size: .8em; letter-spacing: 0; }
     .hero-title { font-size: 2.9em; line-height: 1.13; letter-spacing: -.06em; margin: 34px 0 9px; }
     .subtle { color: #9baeb2; font-size: .92em; }
     .workout-card { margin-top: 28px; border: 1px solid #4b7770; border-radius: 28px; padding: 22px; background: linear-gradient(145deg, #1d4142, #102830); }
@@ -117,14 +116,14 @@
       <div class="preview-caption"><span>iPhone 15 Pro Max · 430 × 932</span><span>本地视觉预览</span></div>
       <div class="phone">
         <div class="screen home active" id="home">
-          <div class="brand"><span class="mark">⬡</span><span>FOCUS / MOVE</span><span class="demo-badge">演示版</span></div>
+          <div class="brand"><span class="mark">⬡</span><span>FOCUS / MOVE</span></div>
           <h1 class="hero-title">放下屏幕，<br>动起来。</h1>
-          <div class="subtle">设定专注倒计时，再用一组下蹲结束这次休息。</div>
+          <div class="subtle">设定屏幕时间目标，再用一组下蹲找回专注。</div>
           <div class="workout-card"><span class="up">↗</span><div class="iconbox">♙</div><div class="kicker">今日动作</div><h2><span data-target>8</span> 次下蹲</h2><div class="subtle">前置镜头识别 · 实时骨架反馈</div><span class="mini-pill">▣ &nbsp;站在手机正前方，全身入镜即可</span></div>
-          <div class="timer-card"><div class="timer-title"><span>◷ &nbsp;专注倒计时</span><b id="minutes">30 分钟</b></div><p class="subtle">剩余时间会显示在灵动岛。长按可查看进度，轻点进入下蹲页面。</p><div class="segmented"><button data-minutes="1">1 分钟测试</button><button data-minutes="30" class="chosen">30 分钟演示</button></div></div>
-          <button class="primary" id="openCamera">▣ &nbsp;开始下蹲检测 &nbsp;→</button>
-          <button class="secondary" id="openIsland">启动灵动岛倒计时</button>
-          <p class="footnote">屏幕使用时间的 App 限额需在 iPhone 设置中单独配置；本演示不会自动读取或修改系统限额。</p>
+          <div class="timer-card"><div class="timer-title"><span>▣ &nbsp;运动屏幕时间控制</span><b id="minutes">30 分钟</b></div><p class="subtle">剩余时间会显示在灵动岛。长按可查看进度，轻点进入下蹲页面。</p><div class="segmented"><button data-minutes="30" class="chosen">30 分钟</button><button data-minutes="60">60 分钟（1）</button></div></div>
+          <button class="primary" id="openIsland">▣ &nbsp;开始运动屏幕时间控制 &nbsp;→</button>
+          <button class="secondary" id="openCamera">开始下蹲检测</button>
+          <p class="footnote">系统 App 限额需在 iPhone 设置中单独配置；这里不会自动读取或修改系统限额。</p>
         </div>
         <div class="screen camera" id="camera">
           <div class="grid"></div>
@@ -143,7 +142,7 @@
         <div class="screen island-demo" id="island-demo">
           <div class="island" id="liveIsland"><span>♙</span><span id="islandTime">30:00</span></div>
           <div class="lock-title">9:41</div><div class="lock-sub">星期三 · 9月23日</div>
-          <div class="activity"><h2>放下手机，做组下蹲</h2><div class="countdown" id="lockTime">30:00</div><p>倒计时结束后，完成 <span data-target>8</span> 次下蹲</p><div class="bar"><span style="width:42%"></span></div></div>
+          <div class="activity"><h2>放下手机，做组下蹲</h2><div class="countdown" id="lockTime">30:00</div><p>屏幕时间结束后，完成 <span data-target>8</span> 次下蹲</p><div class="bar"><span style="width:42%"></span></div></div>
         </div>
         <div class="statusbar"><span>9:41</span><span class="island"></span><span>▮▮ ▰</span></div>
       </div>
@@ -154,6 +153,7 @@
     const $ = id => document.getElementById(id);
     const defaults = {accent:"#6bf5c4",opacity:94,fontScale:100,target:8,depth:0,phase:"准备下蹲",reps:0,minutes:30};
     let settings = {...defaults, ...JSON.parse(localStorage.getItem("focus-squat-preview") || "{}")};
+    if (settings.minutes === 1) settings.minutes = 60;
     const messages = {"准备下蹲":"慢慢下蹲，再站直计 1 次","正在校准":"保持站直，正在记录起始姿势","下蹲中":"继续下蹲，保持动作稳定","已蹲下":"下蹲已识别，站起来完成这次","起立中":"向上站直，完成这一次","动作完成":"完成一次下蹲","调整站位":"请后退一点，让髋、膝盖和脚踝都进入画面"};
     function show(tab) {
       document.querySelectorAll(".screen").forEach(el => el.classList.toggle("active",el.id===tab));
@@ -184,9 +184,10 @@
       $("reps").textContent=settings.reps;
       $("ring").style.setProperty("--ring-percent",(Math.min(1,settings.reps/Math.max(1,settings.target))*100)+"%");
       document.querySelectorAll("[data-target]").forEach(el=>el.textContent=settings.target);
-      $("minutes").textContent=settings.minutes+" 分钟";
-      $("islandTime").textContent=settings.minutes+":00";
-      $("lockTime").textContent=settings.minutes+":00";
+      $("minutes").textContent=settings.minutes===60 ? "60 分钟（1）" : "30 分钟";
+      const actualMinutes=settings.minutes===60 ? 1 : 30;
+      $("islandTime").textContent=actualMinutes+":00";
+      $("lockTime").textContent=actualMinutes+":00";
       document.querySelectorAll("[data-minutes]").forEach(el=>el.classList.toggle("chosen",Number(el.dataset.minutes)===settings.minutes));
       skeleton(settings.depth);
       localStorage.setItem("focus-squat-preview",JSON.stringify(settings));

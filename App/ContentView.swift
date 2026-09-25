@@ -18,12 +18,6 @@ struct ContentView: View {
                             .font(.system(size: 14, weight: .bold, design: .rounded))
                             .tracking(2)
                         Spacer()
-                        Text("演示版")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(mint)
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 7)
-                            .background(mint.opacity(0.12), in: Capsule())
                     }
                     .padding(.top, 16)
 
@@ -32,7 +26,7 @@ struct ContentView: View {
                             .font(.system(size: 44, weight: .bold, design: .rounded))
                             .tracking(-1.5)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text("设定专注倒计时，再用一组下蹲结束这次休息。")
+                        Text("设定屏幕时间目标，再用一组下蹲找回专注。")
                             .font(.system(size: 15))
                             .foregroundStyle(.white.opacity(0.65))
                     }
@@ -85,10 +79,10 @@ struct ContentView: View {
 
                     VStack(alignment: .leading, spacing: 14) {
                         HStack {
-                            Label("专注倒计时", systemImage: "timer")
+                            Label("运动屏幕时间控制", systemImage: "iphone.gen3")
                                 .font(.system(size: 17, weight: .semibold))
                             Spacer()
-                            Text("\(session.demoDurationMinutes) 分钟")
+                            Text(session.selectedControlMinutes == 60 ? "60 分钟（1）" : "30 分钟")
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(mint)
                         }
@@ -96,9 +90,9 @@ struct ContentView: View {
                             .font(.system(size: 13))
                             .foregroundStyle(.white.opacity(0.6))
                             .fixedSize(horizontal: false, vertical: true)
-                        Picker("演示时长", selection: $session.demoDurationMinutes) {
-                            Text("1 分钟测试").tag(1)
-                            Text("30 分钟演示").tag(30)
+                        Picker("屏幕时间目标", selection: $session.selectedControlMinutes) {
+                            Text("30 分钟").tag(30)
+                            Text("60 分钟（1）").tag(60)
                         }
                         .pickerStyle(.segmented)
                     }
@@ -108,11 +102,11 @@ struct ContentView: View {
 
                     VStack(spacing: 12) {
                         Button {
-                            session.showChallenge = true
+                            session.start()
                         } label: {
                             HStack {
-                                Image(systemName: "camera.viewfinder")
-                                Text("开始下蹲检测")
+                                Image(systemName: "iphone.gen3")
+                                Text(session.hasActivity ? "重新开始运动屏幕时间控制" : "开始运动屏幕时间控制")
                                 Spacer()
                                 Image(systemName: "arrow.right")
                             }
@@ -124,8 +118,8 @@ struct ContentView: View {
                         }
                         .buttonStyle(.plain)
 
-                        Button(session.hasActivity ? "重新开始倒计时" : "启动灵动岛倒计时") {
-                            session.start()
+                        Button("开始下蹲检测") {
+                            session.showChallenge = true
                         }
                         .font(.system(size: 15, weight: .semibold))
                         .frame(maxWidth: .infinity)
@@ -135,7 +129,7 @@ struct ContentView: View {
                         .buttonStyle(.plain)
 
                         if session.hasActivity {
-                            Button("结束本次演示", role: .destructive) {
+                            Button("结束本次控制", role: .destructive) {
                                 session.finish()
                             }
                             .font(.system(size: 13, weight: .medium))
@@ -144,7 +138,7 @@ struct ContentView: View {
                         }
                     }
 
-                    Text("屏幕使用时间的 App 限额需在 iPhone 设置中单独配置；本演示不会自动读取或修改系统限额。")
+                    Text("系统 App 限额需在 iPhone 设置中单独配置；这里不会自动读取或修改系统限额。")
                         .font(.system(size: 12))
                         .foregroundStyle(.white.opacity(0.5))
                         .fixedSize(horizontal: false, vertical: true)

@@ -9,7 +9,7 @@ final class FocusSession: ObservableObject {
     @Published private(set) var pushUpTarget = 8
     @Published private(set) var errorMessage: String?
 
-    @Published var demoDurationMinutes = 30
+    @Published var selectedControlMinutes = 30
 
     init() {
         if let active = Activity<FocusActivityAttributes>.activities.first {
@@ -30,7 +30,8 @@ final class FocusSession: ObservableObject {
         }
 
         let now = Date()
-        let end = now.addingTimeInterval(TimeInterval(demoDurationMinutes * 60))
+        let actualMinutes = selectedControlMinutes == 60 ? 1 : 30
+        let end = now.addingTimeInterval(TimeInterval(actualMinutes * 60))
         let state = FocusActivityAttributes.ContentState(
             startedAt: now,
             endsAt: end,
